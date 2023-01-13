@@ -1,7 +1,4 @@
 #Tyler Boechler
-#11294509
-#tjb404
-#Jeff Long
 
 import random as r
 

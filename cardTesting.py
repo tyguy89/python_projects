@@ -1,16 +1,13 @@
 #Tyler Boechler
-#11294509
-#tjb404
-#Jeff Long
 
-from a4q4 import Card as C
+from cardDealer import Card as C
 
-#using function given to us in other question
+#provided function
 def close_enough(a, b, tolerance):
     """
     Purpose:
         Check if 2 floating point values are close enough to 
-        be considered equal.  See the Addendum in the assignment!
+        be considered equal. 
     Pre-Conditions:
         :param a: a floating point value
         :param b: a floating point value
@@ -25,7 +22,7 @@ def close_enough(a, b, tolerance):
 
 #TESTING
 
-#Testing create()
+#Testing Card.create()
 test_item = 'create()'
 deck = ['AH', '2H', '3H', '4H', '5H', '6H', '7H', '8H', '9H', '10H', 'JH', 'QH', 'KH', 'AD', '2D', '3D', '4D', '5D', '6D', '7D', '8D', '9D', '10D', 'JD', 'QD', 'KD', 'AC', '2C', '3C', '4C', '5C', '6C', '7C', '8C', '9C', '10C', 'JC', 'QC', 'KC', 'AS', '2S', '3S', '4S', '5S', '6S', '7S', '8S', '9S', '10S', 'JS', 'QS', 'KS']
 reason = "This is a deck of cards"
@@ -40,7 +37,7 @@ if result != deck:
 
 
 #-----------------------------------------------
-#testing deal()
+#testing Card.deal()
 # call the operation
 test_item = 'create(), deal()'
 
@@ -85,7 +82,7 @@ for values in result:
             occurances[cards] = 1
 
 #-----------------------------------------------
-#testing value()
+#testing Card.value()
 
 test_item = 'create()'
 expected = 1
@@ -124,7 +121,7 @@ if result != expected:
     print('Error in {}: expected {} but obtained {} -- {}'.format(test_item, expected, result, reason))
 
 #----------------------------------------
-#testing highest()
+#testing Card.highest()
 
 test_item = 'highest()'
 expected = "KH"
@@ -177,7 +174,7 @@ if expected != result:
     print('Error in {}: expected {} but obtained {} -- {}'.format(test_item, expected, result, reason))
 
 #----------------------------------------
-#testing lowest()
+#testing Card.lowest()
 
 test_item = 'lowest()'
 expected = "AH"
@@ -230,7 +227,7 @@ if expected != result:
     print('Error in {}: expected {} but obtained {} -- {}'.format(test_item, expected, result, reason))
 
 #---------------------------------
-#testing average()
+#testing Card.average()
 
 
 test_item = 'average()'
