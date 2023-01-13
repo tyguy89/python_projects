@@ -1,0 +1,21 @@
+#Tyler Boechler
+#tjb404
+#11294509
+#Mark Keil
+
+Fruit yield from final year.
+*********************************************
+Firefruit : 10
+Waterfruit : 8
+Grassfruit : 9
+Joltfruit : 22
+Megafruit : 0
+
+
+Fruit yield from  3  years.
+*********************************************
+Firefruit : 28
+Waterfruit : 22
+Grassfruit : 26
+Joltfruit : 47
+Megafruit : 0
