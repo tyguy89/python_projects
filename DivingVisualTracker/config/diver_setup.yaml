@@ -1,0 +1,9 @@
+diver:
+  height:
+    160
+    centre_of_gravity:
+      125
+  weight:
+    -10
+  facing:
+    1
