@@ -2,9 +2,17 @@
 
 import cv2 as cv
 import numpy as np
-import sys, os
+import sys, os, time
 
 sys.path.append(os.path)
+
+index = {"black": np.array([0, 0, 0]), "white": np.array([255, 255, 255]), "red": np.array([0, 0, 255]), "green": np.array([0, 255, 0]), "blue": np.array([255, 0, 0]), "light blue": np.array([255, 157, 0]), "cyan": np.array([255, 255, 0]), "aqua": np.array([190, 255, 0]), "pink": np.array([255, 0, 190]), "magenta": np.array([255, 0, 255]), "purple": np.array([255, 0, 100]), "light green": np.array([0, 255, 150]), "yellow": np.array([0, 255, 255]), "orange": np.array([0, 165, 255])}
+reversed_index = {}
+for k in index:
+        reversed_index[str(index[k])] = k
+
+# print(reversed_index)
+
 
 def find_pixel_neighbours(img, x, y):
     neighbours = []
@@ -41,7 +49,7 @@ def find_colour_in_image(img):
     new_array = np.zeros((len(img), len(img[0]), 3), np.uint8, 'C')
     
     counter = [0, 0]
-    np. set_printoptions(threshold=np. inf)
+    np.set_printoptions(threshold=np. inf)
     for i in range(0, len(img)):
         for j in range(0, int(len(img[i]))):
             
@@ -49,9 +57,9 @@ def find_colour_in_image(img):
 
 
             local_pixel = img[i][j]
-            r = local_pixel[0]
+            r = local_pixel[2]
             g = local_pixel[1]
-            b = local_pixel[2]
+            b = local_pixel[0]
 
             new_r = 0 
             new_g = 0
@@ -81,7 +89,7 @@ def find_colour_in_image(img):
                         new_g = 165
                 else:
                     if b / r > 0.55:
-                        #PINK
+                        #MAGENTA
                         new_b = 255
 
                 new_r = 255
@@ -122,10 +130,10 @@ def find_colour_in_image(img):
                     if r / b > 0.3:
                         if r/b > 0.5:
                             if r/b > 0.75:
-                                #PINK
+                                #MAGENTA
                                 new_r = 255
                             else:
-                                #MAGENTA
+                                #PINK
                                 new_r = 190
                         else:
                             #PURPLE
@@ -134,9 +142,6 @@ def find_colour_in_image(img):
                         
                 new_b = 255
             
-
-            
-            
             #UNKNOWN
             else:
                 print(img[i][j])
@@ -144,7 +149,7 @@ def find_colour_in_image(img):
                 new_g = 0
                 new_b = 0
 
-            new_array[i][j] = np.array([new_r, new_g, new_b])
+            new_array[i][j] = np.array([new_b, new_g, new_r])
             counter[1] += 1
         counter[0] += 1
 
@@ -163,51 +168,142 @@ def is_edge_of_shape(array):
     return counter >= 3 and counter <= 5
 
 def find_all_shape_edges(filtered_img):
+    
+    edge_colours = {}
+    for k in index.keys():
+        edge_colours[k] = []
+
     colour_edges = np.zeros((len(filtered_img), len(filtered_img[0]), 3), np.uint8, 'C')
     for i in range(len(filtered_img)):
         for j in range(len(filtered_img[i])):
             ninebynine = find_pixel_neighbours(filtered_img, i, j)
             if is_edge_of_shape(ninebynine):
                 colour_edges[i][j] = filtered_img[i][j]
+                edge_colours[reversed_index[str(filtered_img[i][j])]].append((i, j))
 
-    return colour_edges
-def extract_shapes_from_np(img, start_coord, range1, range2):
-    #Extracts shapes from a given range and area on the np image
-    #Square, Rectangle, Circle, Ellipse, Triangle
-    assert start_coord[0] + range1 < len(img) and start_coord[1] + range2 < len(img[0]), "Out of bounds"
+    return (colour_edges, edge_colours)
 
+def extract_shapes_from_np(colour_data: dict, zoning_threshold_x: int, zoning_threshold_y: int): 
+    def find_zone(vertex: tuple, zones: dict):
+        v_count = len(zones.keys())
+        
+        for value in list(zones.keys()):
+        
+            if vertex[0] >= zones[value][0][0] - zoning_threshold_x and vertex[0] <= zones[value][0][1] + zoning_threshold_x and vertex[1] >= zones[value][0][2] - zoning_threshold_y and vertex[1] <= zones[value][0][3] + zoning_threshold_y:
+                if vertex[0] < zones[value][0][0] or vertex[0] > zones[value][0][1] or vertex[1] < zones[value][0][2] or vertex[1] > zones[value][0][3]:
+                    return_vals = [zones[value][0][0], zones[value][0][1], zones[value][0][2], zones[value][0][3]]
+                    if vertex[0] < zones[value][0][0]:
+                        return_vals[0] = vertex[0]
+                    if vertex[0] > zones[value][0][1]:
+                        return_vals[1] = vertex[0]
+                    if vertex[1] < zones[value][0][2]:
+                        return_vals[2] = vertex[1]
+                    if vertex[1] > zones[value][0][3]:
+                        return_vals[3] = vertex[1]
+                    
+                    return (value, (return_vals[0], return_vals[1], return_vals[2], return_vals[3]))
+                else:
+                    return(value, zones[value][0])
+                
+        print("ADDING NEW SHAPE", v_count)        
+        return (v_count, (vertex[0]-5, vertex[0]+5, vertex[1]-5, vertex[1]+5))      
 
-    
-    #Ideas for extraction : 
-    #Finding a background colour would make my life easier or sewing a giant green blanket
-    # A shape flood fill algorithm
-    # A shape perimeter / area detection with brute force analysis or simple neural network
-    # Use filters on image to get it to a less colourful noise format
-    # Rely heavily on markup of frames
-    # Add extra parameters and logic in pixel creation for all pixels that have 3 neighbours of a different colour and then keep differnt colours as seperate objects 
+    zones = dict()
+
+    for colour in colour_data.keys():
+        zones[colour] = dict()
+        for v in colour_data[colour]:
+            if len(zones[colour].keys()) == 0:
+                zones[colour][0] = ((v[0]-5, v[0]+5, v[1]-5, v[1]+5), [v])
+            else:
+                cur_zones = list(zones[colour].keys())
+
+                v_zone = find_zone(v, zones[colour])
+
+                if v_zone[0] not in cur_zones:
+                    zones[colour][v_zone[0]] = (v_zone[1], [v])
+                else:
+                    #print(zones[colour][v_zone[0]][1])
+                    zones[colour][v_zone[0]][1].append(v)
+                    #print(zones[colour][v_zone[0]][1])
+                    #print("---")
+                    zones[colour][v_zone[0]] = (v_zone[1], zones[colour][v_zone[0]][1])
+
+    return zones
 
 def extract_nprgb_path_of_image(path):
     img = cv.imread(path)
-    
 
     return img
 
-def main():
+def extract_background(img, colour_data):
+    biggest = "white"
+    for k in colour_data.keys():
+        if len(colour_data[k]) > len(colour_data[biggest]):
+            biggest = k
+    
+    for i in colour_data[biggest]:
+        img[i[0]][i[1]] = np.array([0, 0, 0])
+    
+    return img
 
-    #index = {"red": [255, 0, 0], "green": [0, 255, 0], "blue": [0, 0, 255], "light blue": [0, 157, 255], "cyan": [0, 255, 255], "aqua": [0, 255, 190], "pink": [255, 0, 255], "magenta": [190, 0, 255], "purple": [100, 0, 255], "light green": [150, 255, 0], "yellow": [255, 255, 0], "orange": [255, 165, 0]}
-    #reversed_index = {}
-    #for k in index:
-       # reversed_index[str(index[k])] = k
+def extract_colour(img, colour_data, colour_to_remove):
+    colour_edges = np.zeros((len(img), len(img[0]), 3), np.uint8, 'C')
+    for v in colour_data[colour_to_remove]:
+        colour_edges[v[0]][v[1]] = img[v[0]][v[1]]
     
 
-    colour_object = extract_nprgb_path_of_image("python_projects/DivingVisualTracker/image_analysis/image0 (4).jpeg")
+    return colour_edges
+
+def remove_colour(img, colour_data: dict, colour_to_delete):
+    for i in colour_data[colour_to_delete]:
+        img[i[0]][i[1]] = np.array([0, 0, 0])
     
+    colour_data.pop(colour_to_delete)
+
+    return img
+
+def paint_blank_with_coords(colour_data, canvas, colour):
+    color_lottery = [index["aqua"], index["red"], index["blue"], index["white"], index["yellow"], index["orange"], index["green"], index["magenta"], index["pink"], index["aqua"], index["red"], index["blue"], index["white"], index["yellow"], index["orange"], index["green"], index["magenta"]]
+    color_lottery += color_lottery
+    color_lottery += color_lottery
+    color_lottery += color_lottery
+    color_lottery += color_lottery
+    color_lottery += color_lottery
+    color_lottery += color_lottery
+    color_lottery += color_lottery
+    color_lottery += color_lottery
+
+    for shape in range(len(colour_data)):
+
+        for i in colour_data[shape]:
+            canvas[i[0]][i[1]] = color_lottery[shape]
+
+    return canvas
+
+if __name__ == "__main__":
+
+    start = time.time()
+    colour_object = extract_nprgb_path_of_image("python_projects/DivingVisualTracker/image_analysis/Capture.jpg")
+    blank = np.zeros((len(colour_object), len(colour_object[0]), 3), np.uint8, 'C')
+
     filtered_image = find_colour_in_image(colour_object)
     edges_of_colours = find_all_shape_edges(filtered_image)
+    focus_colour = "white"
+    single_colour = extract_shapes_from_np({focus_colour: edges_of_colours[1][focus_colour]}, 10, 10)
+    #print(single_colour)
+    print("Process time = " + str(time.time() - start))
+    start = time.time()
+    shape_list = []
 
-    cv.imshow("img", edges_of_colours)
+    for i in single_colour[focus_colour].keys():
+        shape_list.append(single_colour[focus_colour][i][1])
+
+    blank = paint_blank_with_coords(shape_list, blank, focus_colour)
+    cv.imshow("img", blank)
+    print("Process time = " + str(time.time() - start))
 
 
     cv.waitKey(0)
     cv.destroyAllWindows()
-main()
+

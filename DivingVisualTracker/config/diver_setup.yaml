@@ -7,3 +7,6 @@ diver:
     -10
   facing:
     1
+  colour:
+    colour_wearing:
+      "purple"
