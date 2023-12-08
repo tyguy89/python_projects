@@ -206,7 +206,7 @@ def extract_shapes_from_np(colour_data: dict, zoning_threshold_x: int, zoning_th
                     return(value, zones[value][0])
                 
         print("ADDING NEW SHAPE", v_count)        
-        return (v_count, (vertex[0]-5, vertex[0]+5, vertex[1]-5, vertex[1]+5))      
+        return (v_count, (vertex[0]-zoning_threshold_x, vertex[0]+zoning_threshold_x, vertex[1]-zoning_threshold_y, vertex[1]+zoning_threshold_y))      
 
     zones = dict()
 
@@ -214,7 +214,7 @@ def extract_shapes_from_np(colour_data: dict, zoning_threshold_x: int, zoning_th
         zones[colour] = dict()
         for v in colour_data[colour]:
             if len(zones[colour].keys()) == 0:
-                zones[colour][0] = ((v[0]-5, v[0]+5, v[1]-5, v[1]+5), [v])
+                zones[colour][0] = ((v[0]-zoning_threshold_x, v[0]+zoning_threshold_x, v[1]-zoning_threshold_y, v[1]+zoning_threshold_y), [v])
             else:
                 cur_zones = list(zones[colour].keys())
 
@@ -284,13 +284,13 @@ def paint_blank_with_coords(colour_data, canvas, colour):
 if __name__ == "__main__":
 
     start = time.time()
-    colour_object = extract_nprgb_path_of_image("python_projects/DivingVisualTracker/image_analysis/Capture.jpg")
+    colour_object = extract_nprgb_path_of_image("python_projects/DivingVisualTracker/image_analysis/IMG_8880.jpg")
     blank = np.zeros((len(colour_object), len(colour_object[0]), 3), np.uint8, 'C')
 
     filtered_image = find_colour_in_image(colour_object)
     edges_of_colours = find_all_shape_edges(filtered_image)
-    focus_colour = "white"
-    single_colour = extract_shapes_from_np({focus_colour: edges_of_colours[1][focus_colour]}, 10, 10)
+    focus_colour = "orange"
+    single_colour = extract_shapes_from_np({focus_colour: edges_of_colours[1][focus_colour]}, 5, 5)
     #print(single_colour)
     print("Process time = " + str(time.time() - start))
     start = time.time()

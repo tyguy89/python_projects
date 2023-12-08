@@ -1,14 +1,21 @@
 
 import global_reference, image_backend, config, image_analysis
+import pyqt
 
 
-class DryboardVisualTracker:
-    def __init__():
+
+class DivingVisualTracker:
+    def __init__(self):
         self.id = 0
     
-    def start():
+    def start(self):
         id = 1
     
-    def kill():
-        destroy()
+    def __str__(self) -> str:
+        
+        pass
+
+    def __del__(self):
+        print("Destoryed visual tracker")
     
+
