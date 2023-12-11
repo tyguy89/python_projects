@@ -1,14 +1,21 @@
 #Tyler Boechler
 
-import image_w_r, time
+from .image_w_r import FileReader
+import time
 import numpy as np
 
 class VideoReader:
+    """
+    Giving a path on initialization, can read frames from video files or pictures
+    """
 
     source = None
-    readingTool = image_w_r.FileReader()
+    readingTool = FileReader()
 
     def __init__(self, path: str):
+        """
+    Giving a path on initialization, can read frames from video files or pictures
+        """
         self.source = path
         
 
