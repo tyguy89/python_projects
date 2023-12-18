@@ -1,0 +1,3 @@
+[submodule "DivingVisualTracker"]
+	path = DivingVisualTracker
+	url = https://github.com/tyguy89/DivingVisualTracker.git
